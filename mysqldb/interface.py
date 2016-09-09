@@ -31,7 +31,7 @@ if __name__=="__main__":
     pdb.set_trace()
     ret = ""
     try:
-        ret = execute_by_monitor("show grants")
+        ret = execute_by_monitor("show grantss")
     except Exception as e:
         print e
     print ret

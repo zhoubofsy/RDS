@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 #coding:utf-8
 
-
-import MySQLdb as mdb
+debug = False 
+#debug = True
+if debug:
+    import sys
+    sys.path.append("..")
+    from log import *
+    import MySQLdb as mdb
+else:
+    import MySQLdb as mdb
+    from rds.log import *
 
 
 def mysql_get_connector(user_type = 'root'):
@@ -32,6 +40,7 @@ class MysqlAdapter(object):
             self.__db = mdb.connect(host,user,passwd)
         except Exception, e:
             err_data = (('Error', e[0], e[1]),)
+            log.error("[mysqldb][connect] %s"%(err_data))
             raise Exception(err_data)
 
     def execute(self,cmd=""):
@@ -44,6 +53,7 @@ class MysqlAdapter(object):
             cursor.execute('show warnings')
             warn_data = cursor.fetchall()
             self.disconnect()
+            log.error("[mysqldb][execute] %s"%(warn_data))
             raise Exception(warn_data)
         return cursor.fetchall()
 
@@ -52,7 +62,7 @@ class MysqlAdapter(object):
             self.__db.close()
 
 class MysqlConnectByMonitor(MysqlAdapter):
-    def connect(self, host="192.168.5.152", user='dabc_admin', passwd=''):
+    def connect(self, host="localhost", user='monitor', passwd=''):
         super(MysqlConnectByMonitor,self).connect(host,user,passwd)
 
 class MysqlConnectByRoot(MysqlAdapter):

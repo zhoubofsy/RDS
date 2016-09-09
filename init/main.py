@@ -13,6 +13,9 @@ from service_ctl import cmd_exec2
 from service_ctl import service_start
 from service_ctl import service_del
 from service_ctl import service_add
+#import sys
+#sys.path.append('..')
+from rds.log import *
 
 def_mnt_point = '/store'
 def_fs_type = 'ext4'
@@ -21,6 +24,8 @@ def_mysql_data_src = '/cs/mysql/data'
 # startup:
 def startup(device, mt_point = def_mnt_point, fs_type = def_fs_type, mysql_data_src = def_mysql_data_src):
     #pdb.set_trace()
+    log.debug("[init rds][startup] entry")
+    return 0
     ret = -1
     mounted = False
     fs = fs_type
