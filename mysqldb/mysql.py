@@ -66,5 +66,5 @@ class MysqlConnectByMonitor(MysqlAdapter):
         super(MysqlConnectByMonitor,self).connect(host,user,passwd)
 
 class MysqlConnectByRoot(MysqlAdapter):
-    def connect(self, host='localhost', user='root',passwd='admin'):
+    def connect(self, host='localhost', user='root',passwd=''):
         super(MysqlConnectByRoot,self).connect(host,user,passwd)

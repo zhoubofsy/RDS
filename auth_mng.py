@@ -6,7 +6,7 @@ from rds.authmng import *
 from rds.dbmng import *
 from rds.log import *
 import rds.rds_err as rdserr
-import json
+import base_mng
 
 def find_miss_dbs(dbs):
     #[miss db list...]
@@ -148,7 +148,7 @@ def do_put_request(env):
                 code = rdserr.map_exception_to_code(int(e[0]))
     else:
         code = rdserr.CODE_ERROR_PARAMS
-    ret = json.dumps({u'code':code,u'str':rdserr.get_str_by_code(code),u'body':body},ensure_ascii=False)
+    ret = {u'code':code,u'str':rdserr.get_str_by_code(code),u'body':body}
     return ret
 
 
@@ -165,30 +165,25 @@ def do_get_request(env):
             code = rdserr.map_exception_to_code(int(e[0]))
     else:
         code = rdserr.CODE_ERROR_PARAMS
-    ret = json.dumps({u'code':code,u'str':rdserr.get_str_by_code(code),u'body':body},ensure_ascii=False)
+    ret = {u'code':code,u'str':rdserr.get_str_by_code(code),u'body':body}
     return ret
 
+class AuthMng(base_mng.BaseMng):
+    def process_get_request(self,env):
+        ret_value = -1
+        result = do_get_request(env)
+        if result != None:
+            self.set_response_header('200 OK', [('Content-Type','text/html')])
+            self.set_response_body(result)
+            ret_value = 0
+        return ret_value
 
-def entry(environ, start_response):
-    log.debug("[auth mng][entry] environ %s"%(environ))
-    method = ""
-    if environ.has_key("REQUEST_METHOD"):
-        method = environ['REQUEST_METHOD']
-    
-    if method == 'GET':
-        # GET Request
-        ret_json = do_get_request(environ)
-        ret_json = ret_json.encode('utf-8')
-        start_response('200 OK', [('Content-Type','text/html')])
-    elif method == 'PUT':
-        # PUT Request
-        ret_json = do_put_request(environ)
-        ret_json = ret_json.encode('utf-8')
-        start_response('200 OK', [('Content-Type','text/html')])
-    else:
-        # Method Not Allowed
-        start_response('405 OK',[('Content-Type','text/html')])
-        ret_json = "Method Not Allowed"
-    log.debug("[auth mng][entry] result %s"%(ret_json))
-    return [ret_json]
+    def process_put_request(self,env):
+        ret_value = -1
+        result = do_put_request(env)
+        if result != None:
+            self.set_response_header('200 OK', [('Content-Type','text/html')])
+            self.set_response_body(result)
+            ret_value = 0
+        return ret_value
 

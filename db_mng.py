@@ -1,12 +1,22 @@
 #!/usr/bin/env python
 #coding:utf-8
 
-from request import parse_formvars
-from rds.dbmng import *
-from rds.log import *
-from rds.authmng import *
-import rds.rds_err as rdserr
-import json
+if __name__ == "__main__":
+    import sys
+    sys.path.append('..')
+    from request import parse_formvars
+    from rds.dbmng import *
+    from rds.log import *
+    from rds.authmng import *
+    import rds.rds_err as rdserr
+    import base_mng
+else:
+    from request import parse_formvars
+    from rds.dbmng import *
+    from rds.log import *
+    from rds.authmng import *
+    import rds.rds_err as rdserr
+    import base_mng
 
 def do_get_request(env):
     # params
@@ -27,7 +37,7 @@ def do_get_request(env):
             log.error("[db mng][do_get_request] Exception %s"%(e))
             code = rdserr.map_exception_to_code(int(e[0]))
             dbs = '' 
-    ret = json.dumps({u'code':code,u'str':rdserr.get_str_by_code(code),u'body':dbs},ensure_ascii=False)
+    ret = {u'code':code,u'str':rdserr.get_str_by_code(code),u'body':dbs}
     return ret
 
 def do_post_request(env):
@@ -69,7 +79,7 @@ def do_post_request(env):
                         log.warning("[db mng][do_post_request] Exception Drop db %s"%(e))
     else:
         code = rdserr.CODE_ERROR_PARAMS
-    ret = json.dumps({u'code':code,u'str':rdserr.get_str_by_code(code),u'body':u''},ensure_ascii=False)
+    ret = {u'code':code,u'str':rdserr.get_str_by_code(code),u'body':u''}
     return ret
 
 def do_delete_request(env):
@@ -91,34 +101,39 @@ def do_delete_request(env):
         except Exception, e:
             log.error("[db mng][do_delete_request] Exception %s"%(e))
             code = rdserr.map_exception_to_code(int(e[0]))
-    ret = json.dumps({u'code':code,u'str':rdserr.get_str_by_code(code),u'body':u''},ensure_ascii=False)
+    ret = {u'code':code,u'str':rdserr.get_str_by_code(code),u'body':u''}
     return ret
 
-def entry(environ, start_response):
-    log.debug("[db mng][entry] environ %s"%(environ))
-    method = ""
-    if environ.has_key("REQUEST_METHOD"):
-        method = environ['REQUEST_METHOD']
-    
-    if method == 'GET':
-        # GET Request:
-        ret_json = do_get_request(environ)
-        ret_json = ret_json.encode('utf-8')
-        start_response('200 OK', [('Content-Type','text/html')])
-    elif method == 'POST':
-        # POST Request:
-        ret_json = do_post_request(environ)
-        ret_json = ret_json.encode('utf-8')
-        start_response('200 OK', [('Content-Type','text/html')])
-    elif method == 'DELETE':
-        # DELETE Request:
-        ret_json = do_delete_request(environ)
-        ret_json = ret_json.encode('utf-8')
-        start_response('200 OK', [('Content-Type','text/html')])
-    else:
-        # Method Not Allowed
-        start_response('405 OK', [('Content-Type','text/html')])
-        ret_json = "Method Not Allowed"
-    log.debug("[db mng][entry] result(%s) %s"%(type(ret_json),ret_json))
-    return [ret_json]
+class DBMng(base_mng.BaseMng):
+    def process_get_request(self, env):
+        ret_value = -1
+        result = do_get_request(env)
+        if result != None:
+            self.set_response_header('200 OK', [('Content-Type','text/html')])
+            self.set_response_body(result)
+            ret_value = 0
+        return ret_value
 
+    def process_post_request(self,env):
+        ret_value = -1
+        result = do_post_request(env)
+        if result != None:
+            self.set_response_header('200 OK', [('Content-Type','text/html')])
+            self.set_response_body(result)
+            ret_value = 0
+        return ret_value
+
+    def process_delete_request(self,env):
+        ret_value = -1
+        result = do_delete_request(env)
+        if result != None:
+            self.set_response_header('200 OK', [('Content-Type','text/html')])
+            self.set_response_body(result)
+            ret_value = 0
+        return ret_value
+ 
+if __name__ == "__main__":
+    import pdb
+    pdb.set_trace()
+    db_manager = DBMng()
+    print db_manager
